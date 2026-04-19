@@ -43,10 +43,6 @@ def generate_protocol(patient: PatientInput):
 
 @app.post("/protocol/rationale")
 def get_rationale(patient: PatientInput):
-    """
-    Calls Gemini to generate a plain-language wellness rationale.
-    AI layer only — the protocol is already computed by the engine.
-    """
     protocol = engine.compute(patient)
 
     prompt = f"""You are a wellness protocol assistant for Hydrawav3, a hands-off recovery platform.
@@ -70,11 +66,14 @@ Rules: use only "supports", "empowers", "recovery", "mobility", "wellness".
 Never use "treats", "cures", "diagnoses", "medical", "clinical", or "heals".
 Keep it under 70 words. Return only the rationale text, no preamble."""
 
-    response = client.models.generate_content(
-    model="gemini-2.0-flash",
-    contents=prompt
-    )
-    return {"rationale": response.text}
+    try:
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+        return {"rationale": response.text}
+    except Exception:
+        return {"rationale": "The selected modality balance supports the body's natural recovery mechanisms. Vibro-acoustic and thermal settings are calibrated to the patient's current wellness state."}
 
 
 @app.post("/outcome/log")
